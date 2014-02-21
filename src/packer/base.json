@@ -1,17 +1,17 @@
 {
     "builders": [
         {
-            "vm_name": "box-dev",
+            "vm_name": "base",
             "type": "virtualbox-iso",
-            "output_directory": "build",
             "guest_os_type": "Ubuntu",
+            "output_directory": "build/base",
             "iso_url": "http://releases.ubuntu.com/13.10/ubuntu-13.10-server-i386.iso",
             "iso_checksum": "77043904185d7efa0966b1c2c153805b",
             "iso_checksum_type": "md5",
             "ssh_username": "packer",
             "ssh_password": "packer",
             "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
-            "http_directory": "conf",
+            "http_directory": "src/ubuntu",
             "boot_command": [
                 "<esc><esc><enter><wait>",
                 "/install/vmlinuz ",
@@ -22,9 +22,6 @@
                 "initrd=/install/initrd.gz -- <enter>"
             ]
         }
-    ],
-    "post-processors": [
-        { "type": "vagrant" }
     ]
 }
 

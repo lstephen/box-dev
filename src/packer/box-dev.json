@@ -1,0 +1,43 @@
+{
+    "builders": [
+        {
+            "type": "virtualbox-ovf",
+            "source_path": "build/base/base.ovf",
+            "output_directory": "build/box-dev",
+            "ssh_username": "packer",
+            "ssh_password": "packer",
+            "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
+            "vboxmanage": [
+                ["modifyvm", "{{.Name}}", "--hwvirtex", "off"]
+            ]
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "echo 'packer' | sudo -S apt-get install -y python-pip python-dev",
+                "echo 'packer' | sudo -S pip install ansible"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "src/ansible",
+            "destination": "/home/packer"
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "ansible-playbook -i /home/packer/ansible/hosts /home/packer/ansible/playbook.yml"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "vagrant",
+            "output": "box-dev.box",
+            "compression_level": 9
+        }
+    ]
+}
+

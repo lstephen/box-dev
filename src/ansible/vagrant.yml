@@ -1,0 +1,17 @@
+---
+- name: Add vagrant user
+  user: name=vagrant home=/home/vagrant
+
+- name: Create vagrant's ssh directory
+  file: path=/home/vagrant/.ssh state=directory mode=0700
+
+- name: Fetch public key
+  get_url: url=https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub
+           dest=/tmp/vagrant.pub
+
+- name: Add vagrant public key
+  authorized_key: user=vagrant key="{{ lookup('file', '/tmp/vagrant.pub') }}"
+
+- name: Ensure authorized_keys has correct permissions
+  file: path=/home/vagrant/.ssh/authorized_keys mode=0600
+
