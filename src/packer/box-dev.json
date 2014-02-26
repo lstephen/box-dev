@@ -7,6 +7,7 @@
             "ssh_username": "packer",
             "ssh_password": "packer",
             "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
+            "headless": true,
             "vboxmanage": [
                 ["modifyvm", "{{.Name}}", "--hwvirtex", "off"]
             ]
@@ -16,7 +17,7 @@
         {
             "type": "shell",
             "inline": [
-                "echo 'packer' | sudo -S apt-get install -y python-pip python-dev",
+                "echo 'packer' | sudo -S apt-get install --no-install-recommends -y python-pip python-dev gcc",
                 "echo 'packer' | sudo -S pip install ansible"
             ]
         },
@@ -28,7 +29,7 @@
         {
             "type": "shell",
             "inline": [
-                "ansible-playbook -i /home/packer/ansible/hosts /home/packer/ansible/playbook.yml"
+                "ansible-playbook -v -i /home/packer/ansible/hosts /home/packer/ansible/playbook.yml"
             ]
         }
     ],

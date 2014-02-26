@@ -2,8 +2,9 @@
 ---
 - hosts: all
   sudo: yes
-  tasks:
-  - include: vagrant.yml 
+  roles:
+    - box-dev
+    - box-vagrant
 
 
 
