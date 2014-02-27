@@ -1,4 +1,106 @@
-task wrapper(type: Wrapper) {
+
+def buildDir = 'build'
+def boxBaseBuildDir = "$buildDir/base"
+def boxDevBuildDir = "$buildDir/box-dev"
+
+def distDir = 'dist'
+
+defaultTasks 'dist'
+
+task clean << {
+    delete buildDir
+}
+
+task boxBase {
+    def userHome = System.properties['user.home']
+
+    inputs.file 'src/packer/base.json'
+    outputs.dir boxBaseBuildDir
+
+    doLast {
+      delete boxBaseBuildDir
+      delete "$userHome/VirtualBox VMS/base"
+
+      exec {
+          executable "${System.env.VBOX_INSTALL_PATH}VBoxManage"
+          args 'unregistervm', 'base', '--delete'
+          ignoreExitValue = true
+      }
+
+      exec {
+          executable 'packer'
+          args 'build', 'src/packer/base.json'
+      }
+    }
+}
+
+task build(dependsOn: boxBase) {
+    inputs.dir file('src/ansible')
+    inputs.file file('src/packer/box-dev.json')
+    outputs.file file("$boxDevBuildDir/box-dev.box")
+
+    doLast {
+
+      delete boxDevBuildDir
+
+      exec {
+          executable 'packer'
+          args 'build', 'src/packer/box-dev.json'
+      }
+
+      copy {
+          from 'box-dev.box'
+          into boxDevBuildDir
+      }
+
+      delete 'box-dev.box'
+    }
+}
+
+task dist(dependsOn: build) {
+    inputs.files '$boxDevBuildDir/box-dev.box', 'src/vagrant/Vagrantfile'
+    outputs.dir distDir
+
+    doLast {
+        copy {
+            from "$boxDevBuildDir/box-dev.box"
+            into distDir
+        }
+
+        copy {
+            from 'src/vagrant/Vagrantfile'
+            into distDir
+        }
+    }
+}
+
+task install(dependsOn: dist) << {
+    exec {
+        commandLine 'cmd', '/c', 'vagrant', 'box', 'remove', 'box-dev'
+        ignoreExitValue = true
+    }
+
+    exec {
+      commandLine 'cmd', '/c', 'vagrant', 'box', 'add', 'box-dev', "$distDir/box-dev.box"
+    }
+}
+
+task up(dependsOn: install) << {
+    exec {
+        workingDir distDir
+        commandLine 'cmd', '/c', 'vagrant', 'up'
+    }
+}
+
+task down << {
+    exec {
+        workingDir distDir
+        commandLine 'cmd', '/c', 'vagrant', 'halt'
+    }
+}
+
+
+task wrapper(type: Wrapper) << {
     gradleVersion = '1.11'
 }
 
