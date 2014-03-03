@@ -1,6 +1,6 @@
 ---
 - name: Add vagrant user
-  user: name=vagrant home={{ vagrant_home }} groups=sudo
+  user: name=vagrant home={{ vagrant_home }} groups=sudo shell=/bin/bash
 
 - name: Create vagrant's ssh directory
   file: path={{ vagrant_home }}/.ssh state=directory mode=0700

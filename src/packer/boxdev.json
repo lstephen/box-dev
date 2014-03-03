@@ -1,9 +1,10 @@
 {
     "builders": [
         {
+            "vm_name": "boxdev-packer",
             "type": "virtualbox-ovf",
             "source_path": "build/base/base.ovf",
-            "output_directory": "build/box-dev",
+            "output_directory": "build/boxdev",
             "ssh_username": "packer",
             "ssh_password": "packer",
             "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
@@ -36,7 +37,7 @@
     "post-processors": [
         {
             "type": "vagrant",
-            "output": "box-dev.box",
+            "output": "boxdev.box",
             "compression_level": 9
         }
     ]

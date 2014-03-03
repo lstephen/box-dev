@@ -1,0 +1,4 @@
+---
+- name: "Install Virtual Box"
+  apt: pkg=virtualbox install_recommends=no
+

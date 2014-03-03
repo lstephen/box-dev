@@ -3,8 +3,10 @@
 - hosts: all
   sudo: yes
   roles:
-    - box-dev
-    - box-vagrant
-
+    - boxdev
+    - vagrant-guest
+    - git
+    - java
+    - virtualbox
 
 

@@ -1,8 +1,0 @@
----
-- name: Set hostname
-  hostname: name=box-dev
-
-- name: Update hosts file
-  copy: src=hosts dest=/etc/hosts mode=0644 owner=root
-
-

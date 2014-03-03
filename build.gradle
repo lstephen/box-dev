@@ -1,9 +1,21 @@
 
+def userHome = System.properties['user.home']
+
 def buildDir = 'build'
 def boxBaseBuildDir = "$buildDir/base"
-def boxDevBuildDir = "$buildDir/box-dev"
+def boxDevBuildDir = "$buildDir/boxdev"
 
 def distDir = 'dist'
+
+def runningDir = "$userHome/.boxdev/running"
+
+def drives = [
+    [ name: 'home', path: "$userHome/.boxdev/home.vmdk" ],
+    [ name: 'sync', path: "$userHome/.boxdev/sync.vmdk" ]
+]
+
+def vboxpath = ${System.env.VBOX_INSTALL_PATH} ?: ""
+def vboxmanage = "${vboxpath}VBoxManage"
 
 defaultTasks 'dist'
 
@@ -12,8 +24,6 @@ task clean << {
 }
 
 task boxBase {
-    def userHome = System.properties['user.home']
-
     inputs.file 'src/packer/base.json'
     outputs.dir boxBaseBuildDir
 
@@ -22,7 +32,7 @@ task boxBase {
       delete "$userHome/VirtualBox VMS/base"
 
       exec {
-          executable "${System.env.VBOX_INSTALL_PATH}VBoxManage"
+          executable vboxmanage
           args 'unregistervm', 'base', '--delete'
           ignoreExitValue = true
       }
@@ -36,34 +46,40 @@ task boxBase {
 
 task build(dependsOn: boxBase) {
     inputs.dir file('src/ansible')
-    inputs.file file('src/packer/box-dev.json')
-    outputs.file file("$boxDevBuildDir/box-dev.box")
+    inputs.file file('src/packer/boxdev.json')
+    outputs.file file("$boxDevBuildDir/boxdev.box")
 
     doLast {
-
       delete boxDevBuildDir
+      delete "$userHome/VirtualBox VMS/boxdev-packer"
+
+      exec {
+          executable vboxmanage
+          args 'unregistervm', 'boxdev-packer', '--delete'
+          ignoreExitValue = true
+      }
 
       exec {
           executable 'packer'
-          args 'build', 'src/packer/box-dev.json'
+          args 'build', 'src/packer/boxdev.json'
       }
 
       copy {
-          from 'box-dev.box'
+          from 'boxdev.box'
           into boxDevBuildDir
       }
 
-      delete 'box-dev.box'
+      delete 'boxdev.box'
     }
 }
 
 task dist(dependsOn: build) {
-    inputs.files '$boxDevBuildDir/box-dev.box', 'src/vagrant/Vagrantfile'
+    inputs.files "$boxDevBuildDir/boxdev.box", 'src/vagrant/Vagrantfile'
     outputs.dir distDir
 
     doLast {
         copy {
-            from "$boxDevBuildDir/box-dev.box"
+            from "$boxDevBuildDir/boxdev.box"
             into distDir
         }
 
@@ -74,27 +90,60 @@ task dist(dependsOn: build) {
     }
 }
 
-task install(dependsOn: dist) << {
+task uninstall << {
     exec {
-        commandLine 'cmd', '/c', 'vagrant', 'box', 'remove', 'box-dev'
+        commandLine 'cmd', '/c', 'vagrant', 'box', 'remove', 'boxdev'
         ignoreExitValue = true
     }
 
     exec {
-      commandLine 'cmd', '/c', 'vagrant', 'box', 'add', 'box-dev', "$distDir/box-dev.box"
+        executable vboxmanage
+        args 'unregistervm', 'boxdev-vagrant'
+        ignoreExitValue = true
+    }
+    delete "$userHome/VirtualBox VMS/boxdev-vagrant"
+}
+
+task install(dependsOn: [dist, uninstall]) << {
+    exec {
+      commandLine 'cmd', '/c', 'vagrant', 'box', 'add', 'boxdev', "$distDir/boxdev.box"
     }
 }
 
-task up(dependsOn: install) << {
+drives.each() {
+    def drive = it
+    task "${drive.name}hd" (dependsOn: uninstall) {
+
+        onlyIf {
+          !new File(drive.path).exists()
+        }
+
+        doLast {
+            exec {
+                executable vboxmanage
+                    args 'createhd', '--filename', drive.path, '--format', 'VMDK', '--size', '40000'
+            }
+        }
+    }
+}
+
+task up(dependsOn: [install, homehd, synchd]) << {
+    delete runningDir
+
+    copy {
+        from distDir
+        into runningDir
+    }
+
     exec {
-        workingDir distDir
+        workingDir runningDir
         commandLine 'cmd', '/c', 'vagrant', 'up'
     }
 }
 
 task down << {
     exec {
-        workingDir distDir
+        workingDir runningDir
         commandLine 'cmd', '/c', 'vagrant', 'halt'
     }
 }

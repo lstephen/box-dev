@@ -1,13 +1,30 @@
 VAGRANTFILE_API_VERSION = "2"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vm.box = "box-dev"
-  config.vm.box_url = "file:box-dev.box"
+  config.vm.box = "boxdev"
+  config.vm.box_url = "file:boxdev.box"
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
   config.vm.provider "virtualbox" do |v|
+    v.name = "boxdev-vagrant"
     v.gui = true
     v.customize ["modifyvm", :id, "--hwvirtex", "off"]
+
+    v.customize ["storagectl", :id,
+        "--name", "SCSI Controller",
+        "--add", "scsi" ]
+
+    v.customize ["storageattach", :id,
+        "--storagectl", "SCSI Controller",
+        "--medium", ENV['USERPROFILE'] + "/.boxdev/home.vmdk",
+        "--port", "0",
+        "--type", "hdd"] 
+
+    v.customize ["storageattach", :id,
+        "--storagectl", "SCSI Controller",
+        "--medium", ENV['USERPROFILE'] + "/.boxdev/sync.vmdk", 
+        "--port", "1",
+        "--type", "hdd"] 
   end
 end
