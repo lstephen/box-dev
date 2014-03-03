@@ -1,4 +1,6 @@
 
+import org.apache.tools.ant.taskdefs.condition.Os
+
 def userHome = System.properties['user.home']
 
 def buildDir = 'build'
@@ -14,8 +16,13 @@ def drives = [
     [ name: 'sync', path: "$userHome/.boxdev/sync.vmdk" ]
 ]
 
+def isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
+def isLinux = !isWindows
+
 def vboxpath = System.env.VBOX_INSTALL_PATH ?: ""
 def vboxmanage = "${vboxpath}VBoxManage"
+
+def vagrant = isWindows ? 'cmd /c vagrant' : 'sh vagrant'
 
 defaultTasks 'dist'
 
@@ -92,7 +99,7 @@ task dist(dependsOn: build) {
 
 task uninstall << {
     exec {
-        commandLine 'cmd', '/c', 'vagrant', 'box', 'remove', 'boxdev'
+        commandLine vagrant, 'box', 'remove', 'boxdev'
         ignoreExitValue = true
     }
 
@@ -106,7 +113,7 @@ task uninstall << {
 
 task install(dependsOn: [dist, uninstall]) << {
     exec {
-      commandLine 'cmd', '/c', 'vagrant', 'box', 'add', 'boxdev', "$distDir/boxdev.box"
+      commandLine vagrant, 'box', 'add', 'boxdev', "$distDir/boxdev.box"
     }
 }
 
@@ -137,14 +144,14 @@ task up(dependsOn: [install, homehd, synchd]) << {
 
     exec {
         workingDir runningDir
-        commandLine 'cmd', '/c', 'vagrant', 'up'
+        commandLine vagrant, 'up'
     }
 }
 
 task down << {
     exec {
         workingDir runningDir
-        commandLine 'cmd', '/c', 'vagrant', 'halt'
+        commandLine vagrant, 'halt'
     }
 }
 
