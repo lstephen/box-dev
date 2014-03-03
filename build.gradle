@@ -22,7 +22,7 @@ def isLinux = !isWindows
 def vboxpath = System.env.VBOX_INSTALL_PATH ?: ""
 def vboxmanage = "${vboxpath}VBoxManage"
 
-def vagrant = isWindows ? 'cmd /c vagrant' : 'sh vagrant'
+def vagrant = isWindows ? 'cmd /c vagrant' : 'vagrant'
 
 defaultTasks 'dist'
 
