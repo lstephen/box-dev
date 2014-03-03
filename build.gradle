@@ -14,7 +14,7 @@ def drives = [
     [ name: 'sync', path: "$userHome/.boxdev/sync.vmdk" ]
 ]
 
-def vboxpath = ${System.env.VBOX_INSTALL_PATH} ?: ""
+def vboxpath = System.env.VBOX_INSTALL_PATH ?: ""
 def vboxmanage = "${vboxpath}VBoxManage"
 
 defaultTasks 'dist'
