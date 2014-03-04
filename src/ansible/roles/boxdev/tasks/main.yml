@@ -12,5 +12,9 @@
   copy: src=mount-boxdev.conf dest=/etc/init mode=0644 owner=root group=root
 
 - name: Add boxdev user
-  user: name=boxdev home={{ boxdev_home }} groups=sudo createhome=no shell=/bin/bash
-
+  user: name=boxdev 
+        home={{ boxdev_home }} 
+        groups=sudo 
+        createhome=no 
+        shell=/bin/bash
+        password="{{ lookup('file', 'boxdev.passwd') }}"
