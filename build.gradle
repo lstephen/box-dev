@@ -16,13 +16,12 @@ def drives = [
     [ name: 'sync', path: "$userHome/.boxdev/sync.vmdk" ]
 ]
 
-def isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
-def isLinux = !isWindows
-
 def vboxpath = System.env.VBOX_INSTALL_PATH ?: ""
 def vboxmanage = "${vboxpath}VBoxManage"
 
-def vagrant = isWindows ? 'cmd /c vagrant' : 'vagrant'
+def vagrant(String... args) {
+    (Os.isFamily(Os.FAMILY_WINDOWS) ? [ 'cmd', '/c', 'vagrant' ] : ['vagrant']) + (args as List)
+}
 
 defaultTasks 'dist'
 
@@ -98,8 +97,9 @@ task dist(dependsOn: build) {
 }
 
 task uninstall << {
+
     exec {
-        commandLine vagrant, 'box', 'remove', 'boxdev'
+        commandLine vagrant('box', 'remove', 'boxdev')
         ignoreExitValue = true
     }
 
@@ -113,7 +113,7 @@ task uninstall << {
 
 task install(dependsOn: [dist, uninstall]) << {
     exec {
-      commandLine vagrant, 'box', 'add', 'boxdev', "$distDir/boxdev.box"
+      commandLine vagrant('box', 'add', 'boxdev', "$distDir/boxdev.box")
     }
 }
 
@@ -144,14 +144,14 @@ task up(dependsOn: [install, homehd, synchd]) << {
 
     exec {
         workingDir runningDir
-        commandLine vagrant, 'up'
+        commandLine vagrant('up')
     }
 }
 
 task down << {
     exec {
         workingDir runningDir
-        commandLine vagrant, 'halt'
+        commandLine vagrant('halt')
     }
 }
 
