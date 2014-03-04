@@ -5,8 +5,11 @@
   roles:
     - boxdev
     - vagrant-guest
+    - vim
     - git
     - java
     - virtualbox
+    - vagrant
+    - packer
 
 

@@ -2,3 +2,6 @@
 - name: "Install Virtual Box"
   apt: pkg=virtualbox install_recommends=no
 
+- name: "Install Virtual Box DKMS"
+  apt: pkg=virtualbox-dkms install_recommends=no
+
