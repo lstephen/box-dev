@@ -8,7 +8,7 @@
             "ssh_username": "packer",
             "ssh_password": "packer",
             "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
-            "headless": true,
+            "headless": false,
             "vboxmanage": [
                 ["modifyvm", "{{.Name}}", "--hwvirtex", "off"]
             ]
@@ -16,22 +16,13 @@
     ],
     "provisioners": [
         {
-            "type": "shell",
-            "inline": [
-                "echo 'packer' | sudo -S apt-get install --no-install-recommends -y python-pip python-dev gcc",
-                "echo 'packer' | sudo -S pip install ansible"
-            ]
-        },
-        {
             "type": "file",
             "source": "src/ansible",
             "destination": "/home/packer"
         },
         {
             "type": "shell",
-            "inline": [
-                "ansible-playbook -v -i /home/packer/ansible/hosts /home/packer/ansible/playbook.yml"
-            ]
+            "script": "src/packer/boxdev-provision.sh"
         }
     ],
     "post-processors": [

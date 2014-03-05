@@ -29,6 +29,38 @@ task clean << {
     delete buildDir
 }
 
+task uninstall << {
+
+    exec {
+        commandLine vagrant('box', 'remove', 'boxdev')
+        ignoreExitValue = true
+    }
+
+    exec {
+        executable vboxmanage
+        args 'unregistervm', 'boxdev-vagrant'
+        ignoreExitValue = true
+    }
+    delete "$userHome/VirtualBox VMS/boxdev-vagrant"
+}
+
+drives.each() {
+    def drive = it
+    task "${drive.name}Hd" (dependsOn: uninstall) {
+
+        onlyIf {
+          !new File(drive.path).exists()
+        }
+
+        doLast {
+            exec {
+                executable vboxmanage
+                    args 'createhd', '--filename', drive.path, '--format', 'VMDK', '--size', '40000'
+            }
+        }
+    }
+}
+
 task boxBase {
     inputs.file 'src/packer/base.json'
     outputs.dir boxBaseBuildDir
@@ -61,7 +93,7 @@ task build(dependsOn: boxBase) {
 
       exec {
           executable vboxmanage
-          args 'unregistervm', 'boxdev-packer', '--delete'
+          args 'unregistervm', 'boxdev-packer'
           ignoreExitValue = true
       }
 
@@ -96,45 +128,13 @@ task dist(dependsOn: build) {
     }
 }
 
-task uninstall << {
-
-    exec {
-        commandLine vagrant('box', 'remove', 'boxdev')
-        ignoreExitValue = true
-    }
-
-    exec {
-        executable vboxmanage
-        args 'unregistervm', 'boxdev-vagrant'
-        ignoreExitValue = true
-    }
-    delete "$userHome/VirtualBox VMS/boxdev-vagrant"
-}
-
 task install(dependsOn: [dist, uninstall]) << {
     exec {
       commandLine vagrant('box', 'add', 'boxdev', "$distDir/boxdev.box")
     }
 }
 
-drives.each() {
-    def drive = it
-    task "${drive.name}hd" (dependsOn: uninstall) {
-
-        onlyIf {
-          !new File(drive.path).exists()
-        }
-
-        doLast {
-            exec {
-                executable vboxmanage
-                    args 'createhd', '--filename', drive.path, '--format', 'VMDK', '--size', '40000'
-            }
-        }
-    }
-}
-
-task up(dependsOn: [install, homehd, synchd]) << {
+task up(dependsOn: [install, homeHd, syncHd]) << {
     delete runningDir
 
     copy {

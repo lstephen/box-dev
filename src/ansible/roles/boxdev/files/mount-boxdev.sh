@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function formatIfRequired {
-    if [ -z `blkid $1` ]
+    if [[ -z `blkid $1` ]]
     then
         mkfs.ext4 -F $1
     fi

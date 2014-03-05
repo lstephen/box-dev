@@ -8,7 +8,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.provider "virtualbox" do |v|
     v.name = "boxdev-vagrant"
-    v.gui = true
     v.customize ["modifyvm", :id, "--hwvirtex", "off"]
 
     v.customize ["storagectl", :id,
