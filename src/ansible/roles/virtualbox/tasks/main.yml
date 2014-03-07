@@ -1,7 +1,7 @@
 ---
-- name: "Install Virtual Box"
-  apt: pkg=virtualbox install_recommends=no
-
-- name: "Install Virtual Box DKMS"
-  apt: pkg=virtualbox-dkms install_recommends=no
+- name: "Install {{ item }}"
+  apt: pkg={{ item }} install_recommends=no
+  with_items:
+      - virtualbox
+      - virtualbox-dkms
 

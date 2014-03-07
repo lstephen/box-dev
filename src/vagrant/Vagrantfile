@@ -6,8 +6,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.synced_folder ".", "/vagrant", disabled: true
 
+  config.vm.network "forwarded_port", guest: 177, host: 2177
+
   config.vm.provider "virtualbox" do |v|
     v.name = "boxdev-vagrant"
+    v.gui = true
     v.customize ["modifyvm", :id, "--hwvirtex", "off"]
 
     v.customize ["storagectl", :id,

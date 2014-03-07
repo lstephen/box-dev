@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function formatIfRequired {
     if [[ -z `blkid $1` ]]
     then

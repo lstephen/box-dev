@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function as_root {
     echo 'packer' | sudo -S $@
 }
