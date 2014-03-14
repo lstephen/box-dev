@@ -1,7 +1,8 @@
 
 import org.apache.tools.ant.taskdefs.condition.Os
 
-def userHome = System.properties['user.home']
+def userHome = System.getenv()['HOMEDRIVE'] + System.getenv()['HOMEPATH']
+def userProfile = System.getenv()['USERPROFILE']
 
 def buildDir = 'build'
 def boxBaseBuildDir = "$buildDir/base"
@@ -9,11 +10,11 @@ def boxDevBuildDir = "$buildDir/boxdev"
 
 def distDir = 'dist'
 
-def runningDir = "$userHome/.boxdev/running"
+def runningDir = "$userProfile/.boxdev/running"
 
 def drives = [
-    [ name: 'home', path: "$userHome/.boxdev/home.vmdk" ],
-    [ name: 'sync', path: "$userHome/.boxdev/sync.vmdk" ]
+    [ name: 'home', path: "$userProfile/.boxdev/home.vmdk" ],
+    [ name: 'sync', path: "$userProfile/.boxdev/sync.vmdk" ]
 ]
 
 def vboxpath = System.env.VBOX_INSTALL_PATH ?: ""
@@ -42,6 +43,7 @@ task uninstall << {
         ignoreExitValue = true
     }
     delete "$userHome/VirtualBox VMS/boxdev-vagrant"
+    delete "$userProfile/VirtualBox VMS/boxdev-vagrant"
 }
 
 drives.each() {
@@ -68,6 +70,7 @@ task boxBase {
     doLast {
       delete boxBaseBuildDir
       delete "$userHome/VirtualBox VMS/base"
+      delete "$userProfile/VirtualBox VMS/base"
 
       exec {
           executable vboxmanage
@@ -89,11 +92,12 @@ task build(dependsOn: boxBase) {
 
     doLast {
       delete boxDevBuildDir
-      delete "$userHome/VirtualBox VMS/boxdev-packer"
+      delete "$userHome/VirtualBox VMs/boxdev-packer"
+      delete "$userProfile/VirtualBox VMs/boxdev-packer"
 
       exec {
           executable vboxmanage
-          args 'unregistervm', 'boxdev-packer'
+          args 'unregistervm', 'boxdev-packer', '--delete'
           ignoreExitValue = true
       }
 
@@ -144,6 +148,11 @@ task up(dependsOn: [install, homeHd, syncHd]) << {
 
     exec {
         workingDir runningDir
+        commandLine vagrant('destroy')
+    }
+
+    exec {
+        workingDir runningDir
         commandLine vagrant('up')
     }
 }
@@ -154,7 +163,6 @@ task down << {
         commandLine vagrant('halt')
     }
 }
-
 
 task wrapper(type: Wrapper) << {
     gradleVersion = '1.11'

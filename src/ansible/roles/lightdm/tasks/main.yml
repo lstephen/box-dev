@@ -1,5 +1,5 @@
 ---
-- name: "Install {{ item }}"
+- name: "Install lightdm"
   apt: pkg={{ item }} install_recommends=no
   with_items:
     - lightdm

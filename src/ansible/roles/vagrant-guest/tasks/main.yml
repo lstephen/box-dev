@@ -23,5 +23,7 @@
         group=root
         validate="visudo -cf %s"
 
-- name: Install VirtualBox guest additions
+- name: Install VirtualBox guest additions {{ item }}
   apt: pkg=virtualbox-guest-dkms install_recommends=no
+
+

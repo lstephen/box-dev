@@ -33,7 +33,7 @@ set list
 set listchars=eol:·,tab:>-
 
 set laststatus=2
-set statusline=%t[%{&ff}]%=%c:%l\ %P
+set statusline=%f\ [%{&ff}]%=\ %c:%l\ %P
 
 imap <buffer> ;cr <C-O>mzChange Request: <CR>Description: <CR>Action: <C-O>'z<ESC>$A
 imap <buffer> ;cc <C-O>mz<C-R>=strftime("LS %d/%m/%y")<CR><CR><CR>Added<CR>Modified<CR>Deleted<CR><C-O>'z<ESC>jj

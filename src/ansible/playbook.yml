@@ -5,12 +5,7 @@
   roles:
     - boxdev
     - vagrant-guest
-    - vim
-    - git
-    - java
-    - virtualbox
-    - vagrant
-    - packer
-    - xdmcp
+    - dev-box
+    - remote-gui
 
 

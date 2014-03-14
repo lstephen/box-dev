@@ -1,4 +1,0 @@
----
-- name: "Install vagrant"
-  apt: pkg=vagrant install_recommends=no
-

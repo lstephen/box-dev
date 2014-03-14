@@ -1,5 +1,5 @@
 ---
-- name: "Install {{ item }}"
+- name: "Install virtualbox"
   apt: pkg={{ item }} install_recommends=no
   with_items:
       - virtualbox
